@@ -1,0 +1,15 @@
+aiohttp
+aiosignal
+async-timeout
+attrs
+certifi
+charset-normalizer
+discord.py
+frozenlist
+idna
+multidict
+psutil~=5.9.8
+requests~=2.31.0
+urllib3
+yarl
+pyautogui~=0.9.54
