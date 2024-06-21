@@ -15,7 +15,7 @@
 
 ## Compile to Executable (Windows)
 1. Run `pip install pyinstaller`
-2. Run `pyinstaller --onefile --noconsole --icon icon.ico DiscordC2.py`
+2. Run `pyinstaller --clean --onefile --noconsole --icon icon.ico DiscordC2.py`
 
 For running without installed Python:
 - Download Python 3.12.x - Windows embeddable package (64-bit) - https://www.python.org/ftp/python/3.12.4/python-3.12.4-embed-amd64.zip
