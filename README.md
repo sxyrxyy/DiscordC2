@@ -20,9 +20,9 @@
 For running without installed Python:
 - Download Python 3.12.x - Windows embeddable package (64-bit) - https://www.python.org/ftp/python/3.12.4/python-3.12.4-embed-amd64.zip
 - create a virtual env:
--- python -m venv venv
--- Activate the env and install the reqs
-- copy the venv folder to the target system
+- python -m venv venv
+- Activate the env and install the reqs
+- copy the venv folder to the target system (make sure the script and the venv folder are in the same place)
 - add the packages to the script:
 ```
 # Get the directory of the current script
